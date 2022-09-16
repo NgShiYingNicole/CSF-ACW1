@@ -8,9 +8,11 @@ def encode_message(list_of_hex: list, message: str, num_bits: int = 1):
     message_counter = 0
     message = ''.join(f"{ord(i):08b}" for i in message)
     length_of_message = len(message)
+    if length_of_message % num_bits != 0:
+        message += (num_bits-(length_of_message % num_bits)) * '0'
     for i in range(len(list_of_hex)):
         if message_counter < length_of_message:
-            if list_of_hex[i] == b'ff':
+            if list_of_hex[i] == b'ff' and list_of_hex[i+1][:1] == b'f':
                 if num_bits == 1:
                     current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
                     replaced_byte = utility.encode_bit_0(current_byte, message[message_counter])  # Replace bit 24
@@ -123,7 +125,7 @@ def decode_message(list_of_hex: list, len_message: int, num_bits: int = 1):
     binary_list = ['0', 'b']
     current_len = 0
     for i in range(len(list_of_hex)):
-        if list_of_hex[i] == b'ff':
+        if list_of_hex[i] == b'ff' and list_of_hex[i+1][:1] == b'f':
             if current_len < len_message * 8:
                 if num_bits == 1:
                     current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
@@ -235,5 +237,12 @@ def get_secret_from_file(filename: str, msg_len: int, num_bits: int = 1):
 
     decodelist = [decodehexstring[i:i + 2] for i in range(0, len(decodehexstring), 2)]
     decoded_byte = decode_message(decodelist, msg_len, num_bits)
-    decoded_string = ''.join(decoded_byte)
-    return text_from_bits(decoded_string)
+    decoded_byte = decoded_byte[2:]
+    decoded_byte_list = [decoded_byte[i:i + 8] for i in range(0, len(decoded_byte), 8)]
+    char_list = []
+    for i in decoded_byte_list:
+        try:
+            char_list.append(text_from_bits(''.join(i)))
+        except UnicodeDecodeError:
+            break
+    return ''.join(char_list)
