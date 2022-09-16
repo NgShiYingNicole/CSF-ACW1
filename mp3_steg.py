@@ -1,33 +1,37 @@
 import binascii
 
 
-def encode_message(list_of_hex: list, message: str):
-    """Function takes in a list of hexadecimal values in byte format and a message in string format.
-    Replaces the bytes in place so there is no return"""
+def encode_message(list_of_hex: list, message: str, num_bits: int = 1):
+    """Function takes in a list of hexadecimal values in byte format, a message in string format and number of bits
+    to replace (defaults to 1). Replaces the bytes in place so there is no return"""
     message_counter = 0
     message = ''.join(f"{ord(i):08b}" for i in message)
     length_of_message = len(message)
     for i in range(len(list_of_hex)):
         if list_of_hex[i] == b'ff':
-            if message_counter < length_of_message:
-                current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
-                replaced_byte = bytes(current_byte[:-1] + message[message_counter], 'utf8')  # Replaces bit 24 (priv
-                # bit) with message bit
-                message_counter += 1
-                list_of_hex[i + 2] = bytes(f'{int(replaced_byte, 2):x}', 'utf8').zfill(2)  # padding to ensure 2 digits
+            if num_bits == 1:
+                if message_counter < length_of_message:
+                    current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
+                    replaced_byte = bytes(current_byte[:-1] + message[message_counter], 'utf8')  # Replaces bit 24 (
+                    # private bit) with message bit
+                    message_counter += 1
+                    list_of_hex[i + 2] = bytes(f'{int(replaced_byte, 2):x}', 'utf8').zfill(2)  # padding to ensure 2
+                    # digits
 
 
-def decode_message(list_of_hex: list, len_message: int):
-    """Function takes in a list of hexadecimal values in byte format and the length of the message (in terms of
-    the number of characters). Returns a list of binary values (1's and 0's)"""
+def decode_message(list_of_hex: list, len_message: int, num_bits: int = 1):
+    """Function takes in a list of hexadecimal values in byte format, length of the message (in terms of
+    the number of characters) and number of bits per message (defaults to 1).
+     Returns a list of binary values (1's and 0's)"""
     binary_list = ['0', 'b']
     current_len = 0
     for i in range(len(list_of_hex)):
         if list_of_hex[i] == b'ff':
             if current_len < len_message * 8:
-                current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
-                binary_list.append(current_byte[-1])  # inserts bit 24 into list
-                current_len += 1
+                if num_bits == 1:
+                    current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
+                    binary_list.append(current_byte[-1])  # inserts bit 24 into list
+                    current_len += 1
             else:
                 break
     return binary_list
