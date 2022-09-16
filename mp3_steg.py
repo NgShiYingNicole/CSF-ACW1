@@ -112,6 +112,8 @@ def encode_message(list_of_hex: list, message: str, num_bits: int = 1):
                     replaced_byte = utility.encode_bit_5(replaced_byte, message[message_counter])  # Replace bit 27
                     message_counter += 1
                     list_of_hex[i + 3] = utility.convert_bin_to_hex(replaced_byte)
+        else:
+            break
 
 
 def decode_message(list_of_hex: list, len_message: int, num_bits: int = 1):
