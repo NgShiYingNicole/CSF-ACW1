@@ -9,10 +9,10 @@ def encode_message(list_of_hex: list, message: str, num_bits: int = 1):
     message = ''.join(f"{ord(i):08b}" for i in message)
     length_of_message = len(message)
     if length_of_message % num_bits != 0:
-        message += (num_bits-(length_of_message % num_bits)) * '0'
+        message += (num_bits - (length_of_message % num_bits)) * '0'
     for i in range(len(list_of_hex)):
         if message_counter < length_of_message:
-            if list_of_hex[i] == b'ff' and list_of_hex[i+1][:1] == b'f':
+            if list_of_hex[i] == b'ff' and list_of_hex[i + 1][:1] == b'f':
                 if num_bits == 1:
                     current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
                     replaced_byte = utility.encode_bit_0(current_byte, message[message_counter])  # Replace bit 24
@@ -125,7 +125,7 @@ def decode_message(list_of_hex: list, len_message: int, num_bits: int = 1):
     binary_list = ['0', 'b']
     current_len = 0
     for i in range(len(list_of_hex)):
-        if list_of_hex[i] == b'ff' and list_of_hex[i+1][:1] == b'f':
+        if list_of_hex[i] == b'ff' and list_of_hex[i + 1][:1] == b'f':
             if current_len < len_message * 8:
                 if num_bits == 1:
                     current_byte = bin(int(list_of_hex[i + 2], 16))[2:].zfill(8)  # Gets the next 8 bits (17-24)
@@ -208,6 +208,14 @@ def decode_message(list_of_hex: list, len_message: int, num_bits: int = 1):
     return binary_list
 
 
+def get_available_bits(list_of_hex: list):
+    num_header = 0
+    for i in range(len(list_of_hex)):
+        if list_of_hex[i] == b'ff' and list_of_hex[i + 1][:1] == b'f':
+            num_header += 1
+    return num_header
+
+
 def text_from_bits(bits, encoding='utf-8', errors='surrogatepass'):
     """Function takes in a string of bits.
     Parameters that can be overriden: Encoding and errors
@@ -219,10 +227,8 @@ def text_from_bits(bits, encoding='utf-8', errors='surrogatepass'):
 def write_secret_to_file(filename: str, secret: str, num_bits: int = 1):
     """Function takes in the filename of mp3 file, secret to be encoded inside and number of bits to use.
     Writes the secret message into a new file called secret.mp3 which is created in the same directory"""
-    with open(filename, 'rb') as fileread:
-        encodehexstring = binascii.hexlify(fileread.read())
 
-    encodelist = [encodehexstring[i:i + 2] for i in range(0, len(encodehexstring), 2)]
+    encodelist = utility.read_file_into_hex_list(filename)
     encode_message(encodelist, secret, num_bits)
 
     with open('secret.mp3', 'wb') as filewrite:
