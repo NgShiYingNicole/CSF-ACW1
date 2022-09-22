@@ -50,16 +50,14 @@ def encode_bit_6(bin_str: str, bit: str):
     return replaced_byte  # padding to ensure 2 digits
 
 
-def encode_bit_7(bin_str: str, bit: str):
-    """Function takes in the byte (in terms of binary) to manipulate and a bit to encode (1 or 0). Changes bit 7.
-     Returns the encoded value as a string """
-    replaced_byte = bin_str[:-8] + bit + bin_str[-7:]  # Encodes bit 7
-    return replaced_byte  # padding to ensure 2 digits
-
-
 def convert_bin_to_hex(bin_str: str):
     """Takes in a binary string (string of 1's and 0's) and formats it into the hexadecimal value"""
     return bytes(f'{int(bin_str, 2):x}', 'utf8').zfill(2)  # padding to ensure 2 digits
+
+
+def convert_byte_hex_to_bin(hex_str: bytes):
+    """Takes in a hex string in byte form and formats it into a binary string"""
+    return bin(int(hex_str, 16))[2:].zfill(8)
 
 
 def read_file_into_hex_list(file: str):
