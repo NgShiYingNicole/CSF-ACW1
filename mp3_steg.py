@@ -59,7 +59,7 @@ def encode_message(list_of_hex: list, message: str, num_bits: int = 1):
                     replaced_byte = utility.encode_bit_4(replaced_byte, message[message_counter])  # Replace bit 28
                     message_counter += 1
                     list_of_hex[i + 3] = utility.convert_bin_to_hex(replaced_byte)
-                elif num_bits == 6:  # Expect audio difference from here on out
+                elif num_bits == 6:
                     current_byte = utility.convert_byte_hex_to_bin(list_of_hex[i + 3])  # Gets the next 8 bits (25-32)
                     replaced_byte = utility.encode_bit_0(current_byte, message[message_counter])  # Replace bit 32
                     message_counter += 1
@@ -89,6 +89,25 @@ def encode_message(list_of_hex: list, message: str, num_bits: int = 1):
                     replaced_byte = utility.encode_bit_5(replaced_byte, message[message_counter])  # Replace bit 27
                     message_counter += 1
                     replaced_byte = utility.encode_bit_6(replaced_byte, message[message_counter])  # Replace bit 26
+                    message_counter += 1
+                    list_of_hex[i + 3] = utility.convert_bin_to_hex(replaced_byte)
+                elif num_bits == 8:  # Expect audio difference from here on out
+                    current_byte = utility.convert_byte_hex_to_bin(list_of_hex[i + 3])  # Gets the next 8 bits (25-32)
+                    replaced_byte = utility.encode_bit_0(current_byte, message[message_counter])  # Replace bit 32
+                    message_counter += 1
+                    replaced_byte = utility.encode_bit_1(replaced_byte, message[message_counter])  # Replace bit 31
+                    message_counter += 1
+                    replaced_byte = utility.encode_bit_2(replaced_byte, message[message_counter])  # Replace bit 30
+                    message_counter += 1
+                    replaced_byte = utility.encode_bit_3(replaced_byte, message[message_counter])  # Replace bit 29
+                    message_counter += 1
+                    replaced_byte = utility.encode_bit_4(replaced_byte, message[message_counter])  # Replace bit 28
+                    message_counter += 1
+                    replaced_byte = utility.encode_bit_5(replaced_byte, message[message_counter])  # Replace bit 27
+                    message_counter += 1
+                    replaced_byte = utility.encode_bit_6(replaced_byte, message[message_counter])  # Replace bit 26
+                    message_counter += 1
+                    replaced_byte = utility.encode_bit_7(replaced_byte, message[message_counter])  # Replace bit 25
                     message_counter += 1
                     list_of_hex[i + 3] = utility.convert_bin_to_hex(replaced_byte)
         else:
@@ -173,6 +192,24 @@ def decode_message(list_of_hex: list, len_message: int, num_bits: int = 1):
                     binary_list.append(current_byte[2])  # inserts bit 27 into list
                     current_len += 1
                     binary_list.append(current_byte[1])  # inserts bit 25 into list
+                    current_len += 1
+                elif num_bits == 8:
+                    current_byte = utility.convert_byte_hex_to_bin(list_of_hex[i + 3])  # Gets the next 8 bits (25-32)
+                    binary_list.append(current_byte[7])  # inserts bit 32 into list
+                    current_len += 1
+                    binary_list.append(current_byte[6])  # inserts bit 31 into list
+                    current_len += 1
+                    binary_list.append(current_byte[5])  # inserts bit 30 into list
+                    current_len += 1
+                    binary_list.append(current_byte[4])  # inserts bit 29 into list
+                    current_len += 1
+                    binary_list.append(current_byte[3])  # inserts bit 28 into list
+                    current_len += 1
+                    binary_list.append(current_byte[2])  # inserts bit 27 into list
+                    current_len += 1
+                    binary_list.append(current_byte[1])  # inserts bit 25 into list
+                    current_len += 1
+                    binary_list.append(current_byte[0])  # inserts bit 25 into list
                     current_len += 1
             else:
                 break

@@ -31,7 +31,8 @@ def check_free_bits(file: StringVar, mode: StringVar):
                             f'if bit 0-3: {bits * 4 / 8} bytes\n'
                             f'if bit 0-4: {bits * 5 / 8} bytes\n'
                             f'if bit 0-5: {bits * 6 / 8} bytes\n'
-                            f'if bit 0-6: {bits * 7 / 8} bytes\n')
+                            f'if bit 0-6: {bits * 7 / 8} bytes\n'
+                            f'if bit 0-7: {bits * 8 / 8} bytes\n')
 
 
 def begin_encode(cover_file: StringVar, payload_file: StringVar, mode: StringVar, bits: IntVar):
@@ -43,7 +44,7 @@ def begin_encode(cover_file: StringVar, payload_file: StringVar, mode: StringVar
         try:
             save_dir = filedialog.askdirectory(title='Enter directory to save encoded mp3 at',
                                                initialdir='/')
-            mp3_steg.write_secret_to_file(save_dir, cover_file, payload_file, bits + 1)
+            mp3_steg.write_secret_to_file(save_dir, cover_file, payload_file, bits)
             messagebox.showinfo('Success', f'Your payload has been encoded. Take note of the following information,'
                                            ' the receiver needs to know it in order for a successful decoding!\n'
                                            f'Bits used: {bits}\n'
@@ -60,9 +61,8 @@ def begin_decode(encoded_file: StringVar, bits_used: IntVar, size_file: IntVar, 
     file_ext = file_ext.get()
     try:
         save_as = filedialog.asksaveasfilename(title='Enter name of file to save as',
-                                               initialdir='\\')
-        print(save_as)
-        status = mp3_steg.get_secret_from_file(encoded_file, size_file, bits_used + 1, save_as + file_ext)
+                                               initialdir='/')
+        status = mp3_steg.get_secret_from_file(encoded_file, size_file, bits_used, save_as + file_ext)
         messagebox.showinfo('Success', f'{status}')
     except Exception as e:
         messagebox.showerror('Error', f'An error has occurred.\n[e')
@@ -103,12 +103,12 @@ cover_selected_file_label = Label(encodeTab, textvariable=selected_cover_file_st
 payload_file_selection_label = Label(encodeTab, text='Payload file selected: ')
 payload_selected_file_label = Label(encodeTab, textvariable=selected_payload_file_stringvar)
 mode_selection = Label(encodeTab, text='Select mode: ')
-num_bits_label = Label(encodeTab, text='Select bits to use (0-7): ')
+num_bits_label = Label(encodeTab, text='Select number of bits to use (1-8): ')
 
 # Decode Labels
 encoded_file_selection_label = Label(decodeTab, text='Selected file to decode')
 encoded_selected_file_label = Label(decodeTab, textvariable=encoded_file_stringvar)
-num_bits_used_label = Label(decodeTab, text='Bit position(s) used:')
+num_bits_used_label = Label(decodeTab, text='Number of bits used:')
 size_of_file_label = Label(decodeTab, text='Size of file:')
 file_extension_label = Label(decodeTab, text='File extension:')
 
@@ -138,7 +138,7 @@ try_decode_function_button = Button(decodeTab, text='Begin!',
                                                                  file_extension_stringvar))
 
 # Spinbox
-num_bits_selection = Spinbox(encodeTab, from_=0, to=7, textvariable=num_bits_encode)
+num_bits_selection = Spinbox(encodeTab, from_=1, to=8, textvariable=num_bits_encode)
 
 # Entry box
 num_bits_used_entry = ttk.Entry(decodeTab, textvariable=num_bits_decode_intvar)
