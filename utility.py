@@ -72,3 +72,11 @@ def read_file_into_hex_list(file: str):
         file_hex_str = binascii.hexlify(fileread.read())
 
     return [file_hex_str[i:i + 2] for i in range(0, len(file_hex_str), 2)]
+
+
+def text_from_bits(bits, encoding='utf8', errors='surrogatepass'):
+    """Function takes in a string of bits.
+    Parameters that can be overriden: Encoding and errors
+    Returns text from a list of binary values (1's and 0's)"""
+    n = int(bits, 2)
+    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'

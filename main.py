@@ -6,6 +6,7 @@ import pathlib
 
 import mp3_steg
 import utility
+import wav_steg
 
 
 def select_file(sv: StringVar):
@@ -22,8 +23,20 @@ def select_file(sv: StringVar):
 def check_free_bits(file: StringVar, mode: StringVar):
     """Function takes in the file name and mode both in StringVar
     format and returns number of available bit positions"""
-    if mode.get() == 'MP3':
+    mode = mode.get()
+    if mode == 'MP3':
         bits = mp3_steg.get_available_bits(utility.read_file_into_hex_list(file.get()))
+        messagebox.showinfo('Available storage at different settings',
+                            f'If bit 0 is used only: {bits / 8} bytes\n'
+                            f'If bit 0 and 1: {bits * 2 / 8} bytes\n'
+                            f'if bit 0-2: {bits * 3 / 8} bytes\n'
+                            f'if bit 0-3: {bits * 4 / 8} bytes\n'
+                            f'if bit 0-4: {bits * 5 / 8} bytes\n'
+                            f'if bit 0-5: {bits * 6 / 8} bytes\n'
+                            f'if bit 0-6: {bits * 7 / 8} bytes\n'
+                            f'if bit 0-7: {bits * 8 / 8} bytes\n')
+    elif mode == 'WAV':
+        bits = wav_steg.get_available_bits(utility.read_file_into_hex_list(file.get()))
         messagebox.showinfo('Available storage at different settings',
                             f'If bit 0 is used only: {bits / 8} bytes\n'
                             f'If bit 0 and 1: {bits * 2 / 8} bytes\n'
@@ -52,6 +65,18 @@ def begin_encode(cover_file: StringVar, payload_file: StringVar, mode: StringVar
                                            f'File extension: {pathlib.Path(payload_file).suffix}')
         except Exception as e:
             messagebox.showerror('Error', f'An error has occurred.\n{e}')
+    elif mode == 'WAV':
+        try:
+            save_dir = filedialog.askdirectory(title='Enter directory to save encoded wav at',
+                                               initialdir='/')
+            wav_steg.write_secret_to_file(save_dir, cover_file, payload_file, bits)
+            messagebox.showinfo('Success', f'Your payload has been encoded. Take note of the following information,'
+                                           ' the receiver needs to know it in order for a successful decoding!\n'
+                                           f'Bits used: {bits}\n'
+                                           f'File size: {os.stat(payload_file).st_size}\n'
+                                           f'File extension: {pathlib.Path(payload_file).suffix}')
+        except Exception as e:
+            messagebox.showerror('Error', f'An error has occurred.\n{e}')
 
 
 def begin_decode(mode_selected: StringVar, encoded_file: StringVar,
@@ -66,6 +91,14 @@ def begin_decode(mode_selected: StringVar, encoded_file: StringVar,
             save_as = filedialog.asksaveasfilename(title='Enter name of file to save as',
                                                    initialdir='/')
             status = mp3_steg.get_secret_from_file(encoded_file, size_file, bits_used, save_as + file_ext)
+            messagebox.showinfo('Success', f'{status}')
+        except Exception as e:
+            messagebox.showerror('Error', f'An error has occurred.\n{e}')
+    elif mode_selected == 'WAV':
+        try:
+            save_as = filedialog.asksaveasfilename(title='Enter name of file to save as',
+                                                   initialdir='/')
+            status = wav_steg.get_secret_from_file(encoded_file, size_file, bits_used, save_as + file_ext)
             messagebox.showinfo('Success', f'{status}')
         except Exception as e:
             messagebox.showerror('Error', f'An error has occurred.\n{e}')
@@ -118,8 +151,8 @@ size_of_file_label = Label(decodeTab, text='Size of file:')
 file_extension_label = Label(decodeTab, text='File extension:')
 
 # Dropdowns
-mode_selection_dropdown_encode = OptionMenu(encodeTab, mode_selected_encode_stringvar, 'PNG', 'MP3')
-mode_selection_dropdown_decode = OptionMenu(decodeTab, mode_selected_decode_stringvar, 'PNG', 'MP3')
+mode_selection_dropdown_encode = OptionMenu(encodeTab, mode_selected_encode_stringvar, 'PNG', 'MP3', 'WAV')
+mode_selection_dropdown_decode = OptionMenu(decodeTab, mode_selected_decode_stringvar, 'PNG', 'MP3', 'WAV')
 
 # Encode Buttons
 select_cover_file_button = Button(encodeTab, text='Choose cover file:',
@@ -132,7 +165,8 @@ try_encode_function_button = Button(encodeTab, text='Begin!',
                                                                  mode_selected_encode_stringvar,
                                                                  num_bits_encode))
 get_num_bits_button = Button(encodeTab, text='Get number of bits available',
-                             command=lambda: check_free_bits(selected_cover_file_stringvar, mode_selected_encode_stringvar))
+                             command=lambda: check_free_bits(selected_cover_file_stringvar,
+                                                             mode_selected_encode_stringvar))
 
 # Decode Buttons
 select_encoded_file_button = Button(decodeTab, text='Choose encoded file:',

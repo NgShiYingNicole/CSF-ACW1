@@ -1,13 +1,12 @@
 import binascii
-import utility
 import itertools
 
+import utility
 
 def encode_message(list_of_hex: list, message: str, num_bits: int = 1):
     """Function takes in a list of hexadecimal values in byte format, a message in string format and number of bits
     to replace (defaults to 1). Replaces the bytes in place so there is no return"""
     message_counter = 0
-    # message = ''.join(f"{ord(i):08b}" for i in message)
     length_of_message = len(message)
     if length_of_message % num_bits != 0:
         message += (num_bits - (length_of_message % num_bits)) * '0'
@@ -222,14 +221,6 @@ def get_available_bits(list_of_hex: list):
         if list_of_hex[i] == b'ff' and list_of_hex[i + 1] == b'fb':
             num_header += 1
     return num_header
-
-
-def text_from_bits(bits, encoding='utf8', errors='surrogatepass'):
-    """Function takes in a string of bits.
-    Parameters that can be overriden: Encoding and errors
-    Returns text from a list of binary values (1's and 0's)"""
-    n = int(bits, 2)
-    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'
 
 
 def write_secret_to_file(save_dir: str, filename: str, payload: str, num_bits: int = 1):
