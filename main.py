@@ -54,18 +54,21 @@ def begin_encode(cover_file: StringVar, payload_file: StringVar, mode: StringVar
             messagebox.showerror('Error', f'An error has occurred.\n{e}')
 
 
-def begin_decode(encoded_file: StringVar, bits_used: IntVar, size_file: IntVar, file_ext: StringVar):
+def begin_decode(mode_selected: StringVar, encoded_file: StringVar,
+                 bits_used: IntVar, size_file: IntVar, file_ext: StringVar):
+    mode_selected = mode_selected.get()
     encoded_file = encoded_file.get()
     bits_used = bits_used.get()
     size_file = size_file.get()
     file_ext = file_ext.get()
-    try:
-        save_as = filedialog.asksaveasfilename(title='Enter name of file to save as',
-                                               initialdir='/')
-        status = mp3_steg.get_secret_from_file(encoded_file, size_file, bits_used, save_as + file_ext)
-        messagebox.showinfo('Success', f'{status}')
-    except Exception as e:
-        messagebox.showerror('Error', f'An error has occurred.\n[e')
+    if mode_selected == 'MP3':
+        try:
+            save_as = filedialog.asksaveasfilename(title='Enter name of file to save as',
+                                                   initialdir='/')
+            status = mp3_steg.get_secret_from_file(encoded_file, size_file, bits_used, save_as + file_ext)
+            messagebox.showinfo('Success', f'{status}')
+        except Exception as e:
+            messagebox.showerror('Error', f'An error has occurred.\n{e}')
 
 
 root = Tk()
@@ -84,10 +87,11 @@ tabControl.add(decodeTab, text='Decode')
 selected_cover_file_stringvar = StringVar(encodeTab)
 selected_payload_file_stringvar = StringVar(encodeTab)
 function_selected = StringVar(encodeTab)
-mode_selected = StringVar(encodeTab)
+mode_selected_encode_stringvar = StringVar(encodeTab)
 num_bits_encode = IntVar(encodeTab)
 
 # Decode variable declarations
+mode_selected_decode_stringvar = StringVar(decodeTab)
 encoded_file_stringvar = StringVar(decodeTab)
 num_bits_decode_intvar = IntVar(decodeTab)
 size_of_file_intvar = IntVar(decodeTab)
@@ -102,10 +106,11 @@ cover_file_selection_label = Label(encodeTab, text='Cover file selected: ')
 cover_selected_file_label = Label(encodeTab, textvariable=selected_cover_file_stringvar)
 payload_file_selection_label = Label(encodeTab, text='Payload file selected: ')
 payload_selected_file_label = Label(encodeTab, textvariable=selected_payload_file_stringvar)
-mode_selection = Label(encodeTab, text='Select mode: ')
+mode_selection_encode_label = Label(encodeTab, text='Select mode: ')
 num_bits_label = Label(encodeTab, text='Select number of bits to use (1-8): ')
 
 # Decode Labels
+mode_selection_decode_label = Label(decodeTab, text='Select mode: ')
 encoded_file_selection_label = Label(decodeTab, text='Selected file to decode')
 encoded_selected_file_label = Label(decodeTab, textvariable=encoded_file_stringvar)
 num_bits_used_label = Label(decodeTab, text='Number of bits used:')
@@ -113,7 +118,8 @@ size_of_file_label = Label(decodeTab, text='Size of file:')
 file_extension_label = Label(decodeTab, text='File extension:')
 
 # Dropdowns
-mode_selection_dropdown = OptionMenu(encodeTab, mode_selected, 'PNG', 'MP3')
+mode_selection_dropdown_encode = OptionMenu(encodeTab, mode_selected_encode_stringvar, 'PNG', 'MP3')
+mode_selection_dropdown_decode = OptionMenu(decodeTab, mode_selected_decode_stringvar, 'PNG', 'MP3')
 
 # Encode Buttons
 select_cover_file_button = Button(encodeTab, text='Choose cover file:',
@@ -123,16 +129,17 @@ select_payload_file_button = Button(encodeTab, text='Choose payload file:',
 try_encode_function_button = Button(encodeTab, text='Begin!',
                                     command=lambda: begin_encode(selected_cover_file_stringvar,
                                                                  selected_payload_file_stringvar,
-                                                                 mode_selected,
+                                                                 mode_selected_encode_stringvar,
                                                                  num_bits_encode))
 get_num_bits_button = Button(encodeTab, text='Get number of bits available',
-                             command=lambda: check_free_bits(selected_cover_file_stringvar, mode_selected))
+                             command=lambda: check_free_bits(selected_cover_file_stringvar, mode_selected_encode_stringvar))
 
 # Decode Buttons
 select_encoded_file_button = Button(decodeTab, text='Choose encoded file:',
                                     command=lambda: select_file(encoded_file_stringvar))
 try_decode_function_button = Button(decodeTab, text='Begin!',
-                                    command=lambda: begin_decode(encoded_file_stringvar,
+                                    command=lambda: begin_decode(mode_selected_decode_stringvar,
+                                                                 encoded_file_stringvar,
                                                                  num_bits_decode_intvar,
                                                                  size_of_file_intvar,
                                                                  file_extension_stringvar))
@@ -155,24 +162,26 @@ select_cover_file_button.grid(row=0, column=2, sticky=E, pady=2, padx=2)
 payload_file_selection_label.grid(row=1, column=0, sticky=W, pady=2, padx=2)
 payload_selected_file_label.grid(row=1, column=1, sticky=W, pady=2, padx=2)
 select_payload_file_button.grid(row=1, column=2, sticky=E, pady=2, padx=2)
-mode_selection.grid(row=2, column=0, sticky=W, pady=2, padx=2)
-mode_selection_dropdown.grid(row=2, column=2, sticky=E, pady=2, padx=2)
+mode_selection_encode_label.grid(row=2, column=0, sticky=W, pady=2, padx=2)
+mode_selection_dropdown_encode.grid(row=2, column=2, sticky=E, pady=2, padx=2)
 num_bits_label.grid(row=3, column=0, sticky=E, pady=2, padx=2)
 num_bits_selection.grid(row=3, column=2, sticky=E, pady=2, padx=2)
 try_encode_function_button.grid(row=4, column=2, sticky=E, pady=2, padx=2)
 get_num_bits_button.grid(row=5, column=2, sticky=E, pady=2, padx=2)
 
 # decodeTab Grid
-encoded_file_selection_label.grid(row=0, column=0, sticky=W, pady=2, padx=2)
-encoded_selected_file_label.grid(row=0, column=1, sticky=W, pady=2, padx=2)
-select_encoded_file_button.grid(row=0, column=2, sticky=E, pady=2, padx=2)
-num_bits_used_label.grid(row=1, column=0, sticky=W, pady=2, padx=2)
-num_bits_used_entry.grid(row=1, column=2, sticky=E, pady=2, padx=2)
-size_of_file_label.grid(row=2, column=0, sticky=W, pady=2, padx=2)
-size_of_file_entry.grid(row=2, column=2, sticky=E, pady=2, padx=2)
-file_extension_label.grid(row=3, column=0, sticky=W, pady=2, padx=2)
-file_extension_entry.grid(row=3, column=2, sticky=E, pady=2, padx=2)
-try_decode_function_button.grid(row=4, column=2, sticky=E, pady=2, padx=2)
+mode_selection_decode_label.grid(row=0, column=0, sticky=W, pady=2, padx=2)
+mode_selection_dropdown_decode.grid(row=0, column=2, sticky=E, pady=2, padx=2)
+encoded_file_selection_label.grid(row=1, column=0, sticky=W, pady=2, padx=2)
+encoded_selected_file_label.grid(row=1, column=1, sticky=W, pady=2, padx=2)
+select_encoded_file_button.grid(row=1, column=2, sticky=E, pady=2, padx=2)
+num_bits_used_label.grid(row=2, column=0, sticky=W, pady=2, padx=2)
+num_bits_used_entry.grid(row=2, column=2, sticky=E, pady=2, padx=2)
+size_of_file_label.grid(row=3, column=0, sticky=W, pady=2, padx=2)
+size_of_file_entry.grid(row=3, column=2, sticky=E, pady=2, padx=2)
+file_extension_label.grid(row=4, column=0, sticky=W, pady=2, padx=2)
+file_extension_entry.grid(row=4, column=2, sticky=E, pady=2, padx=2)
+try_decode_function_button.grid(row=5, column=2, sticky=E, pady=2, padx=2)
 
 # Main loop
 root.mainloop()
