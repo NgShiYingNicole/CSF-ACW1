@@ -7,6 +7,7 @@ import pathlib
 import mp3_steg
 import utility
 import wav_steg
+import png_steg
 
 
 def select_file(sv: StringVar):
@@ -46,6 +47,8 @@ def check_free_bits(file: StringVar, mode: StringVar):
                             f'if bit 0-5: {bits * 6 / 8} bytes\n'
                             f'if bit 0-6: {bits * 7 / 8} bytes\n'
                             f'if bit 0-7: {bits * 8 / 8} bytes\n')
+    else:
+        messagebox.showerror('Mode not supported')
 
 
 def begin_encode(cover_file: StringVar, payload_file: StringVar, mode: StringVar, bits: IntVar):
@@ -77,6 +80,14 @@ def begin_encode(cover_file: StringVar, payload_file: StringVar, mode: StringVar
                                            f'File extension: {pathlib.Path(payload_file).suffix}')
         except Exception as e:
             messagebox.showerror('Error', f'An error has occurred.\n{e}')
+    elif mode == 'PNG':
+        try:
+            png_steg.run_encode(cover_file, payload_file, bits)
+            messagebox.showinfo('Success', f'Your payload has been encoded. Take note of the following information,'
+                                           ' the receiver needs to know it in order for a successful decoding!\n'
+                                           f'Bits used: {bits}\n')
+        except Exception as e:
+            messagebox.showerror('Error', f'An error has occurred.\n{e}')
 
 
 def begin_decode(mode_selected: StringVar, encoded_file: StringVar,
@@ -99,6 +110,14 @@ def begin_decode(mode_selected: StringVar, encoded_file: StringVar,
             save_as = filedialog.asksaveasfilename(title='Enter name of file to save as',
                                                    initialdir='/')
             status = wav_steg.get_secret_from_file(encoded_file, size_file, bits_used, save_as + file_ext)
+            messagebox.showinfo('Success', f'{status}')
+        except Exception as e:
+            messagebox.showerror('Error', f'An error has occurred.\n{e}')
+    elif mode_selected == 'PNG':
+        try:
+            save_as = filedialog.asksaveasfilename(title='Enter name of file to save as',
+                                                   initialdir='/')
+            status = png_steg.run_decode(encoded_file, bits_used, save_as)
             messagebox.showinfo('Success', f'{status}')
         except Exception as e:
             messagebox.showerror('Error', f'An error has occurred.\n{e}')
